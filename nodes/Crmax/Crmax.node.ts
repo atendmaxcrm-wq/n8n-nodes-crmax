@@ -526,63 +526,48 @@ export class Crmax implements INodeType {
 
 				// ==================== MESSAGE ====================
 				else if (resource === 'message') {
-					if (operation === 'sendText') {
+					if (operation === 'sendTextBySession') {
+						// Enviar texto por Session ID (igual WTS)
 						method = 'POST';
-						endpoint = '/api/messages/send';
+						const sessionId = this.getNodeParameter('sessionId', i) as string;
+						endpoint = `/api/sessions/${sessionId}/messages/text`;
+						body.text = this.getNodeParameter('message', i) as string;
+					} else if (operation === 'sendTextByPhone') {
+						// Enviar texto por telefone + instância
+						method = 'POST';
+						const options = this.getNodeParameter('options', i, {}) as IDataObject;
+						endpoint = options.sync ? '/api/messages/send-sync' : '/api/messages/send';
 						body = {
 							phone: this.getNodeParameter('phone', i) as string,
 							instanceId: this.getNodeParameter('instanceId', i) as string,
 							message: this.getNodeParameter('message', i) as string,
 						};
-					} else if (operation === 'sendTextSync') {
+					} else if (operation === 'sendFileBySession') {
+						// Enviar arquivo por Session ID
 						method = 'POST';
-						endpoint = '/api/messages/send-sync';
-						body = {
-							phone: this.getNodeParameter('phone', i) as string,
-							instanceId: this.getNodeParameter('instanceId', i) as string,
-							message: this.getNodeParameter('message', i) as string,
-						};
-					} else if (operation === 'sendImage') {
+						const sessionId = this.getNodeParameter('sessionId', i) as string;
+						const fileType = this.getNodeParameter('fileType', i) as string;
+						endpoint = `/api/sessions/${sessionId}/messages/${fileType}`;
+						body.mediaUrl = this.getNodeParameter('mediaUrl', i) as string;
+						const caption = this.getNodeParameter('caption', i, '') as string;
+						if (caption) body.caption = caption;
+						const fileName = this.getNodeParameter('fileName', i, '') as string;
+						if (fileName) body.fileName = fileName;
+					} else if (operation === 'sendFileByPhone') {
+						// Enviar arquivo por telefone + instância
 						method = 'POST';
 						endpoint = '/api/messages/send';
+						const fileType = this.getNodeParameter('fileType', i) as string;
 						body = {
 							phone: this.getNodeParameter('phone', i) as string,
 							instanceId: this.getNodeParameter('instanceId', i) as string,
-							mediaType: 'image',
+							mediaType: fileType,
 							mediaUrl: this.getNodeParameter('mediaUrl', i) as string,
 						};
 						const caption = this.getNodeParameter('caption', i, '') as string;
 						if (caption) body.caption = caption;
-					} else if (operation === 'sendAudio') {
-						method = 'POST';
-						endpoint = '/api/messages/send';
-						body = {
-							phone: this.getNodeParameter('phone', i) as string,
-							instanceId: this.getNodeParameter('instanceId', i) as string,
-							mediaType: 'audio',
-							mediaUrl: this.getNodeParameter('mediaUrl', i) as string,
-						};
-					} else if (operation === 'sendDocument') {
-						method = 'POST';
-						endpoint = '/api/messages/send';
-						body = {
-							phone: this.getNodeParameter('phone', i) as string,
-							instanceId: this.getNodeParameter('instanceId', i) as string,
-							mediaType: 'document',
-							mediaUrl: this.getNodeParameter('mediaUrl', i) as string,
-						};
 						const fileName = this.getNodeParameter('fileName', i, '') as string;
 						if (fileName) body.fileName = fileName;
-					} else if (operation === 'sendViaConversation') {
-						method = 'POST';
-						const conversationId = this.getNodeParameter('conversationId', i) as string;
-						endpoint = `/api/conversations/${conversationId}/message`;
-						body.message = this.getNodeParameter('message', i) as string;
-					} else if (operation === 'sendViaConversationSync') {
-						method = 'POST';
-						const conversationId = this.getNodeParameter('conversationId', i) as string;
-						endpoint = `/api/conversations/${conversationId}/message/sync`;
-						body.message = this.getNodeParameter('message', i) as string;
 					} else if (operation === 'getStatus') {
 						method = 'GET';
 						const messageId = this.getNodeParameter('messageId', i) as string;
