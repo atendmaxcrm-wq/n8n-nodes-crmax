@@ -119,7 +119,7 @@ export class Crmax implements INodeType {
 						returnData.push({
 							name: pipeline.name,
 							value: pipeline.id,
-							description: `${pipeline.stages?.length || 0} etapas`,
+							description: `${pipeline.stage_count || 0} etapas`,
 						});
 					}
 				} catch (error) {

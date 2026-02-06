@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-crmax",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "CRMax CRM - Integração completa com gestão de leads via WhatsApp",
 	"license": "MIT",
 	"homepage": "https://painel.crmax.com.br",
