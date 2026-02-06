@@ -83,10 +83,13 @@ export const messageFields: INodeProperties[] = [
 		description: 'Recipient phone number (with country code, no + or spaces)',
 	},
 	{
-		displayName: 'Instance ID',
+		displayName: 'WhatsApp Instance',
 		name: 'instanceId',
-		type: 'string',
+		type: 'options',
 		required: true,
+		typeOptions: {
+			loadOptionsMethod: 'getInstances',
+		},
 		displayOptions: {
 			show: {
 				resource: ['message'],
@@ -94,7 +97,7 @@ export const messageFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'WhatsApp instance ID',
+		description: 'WhatsApp instance to send from. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 	},
 	{
 		displayName: 'Message',
@@ -131,10 +134,13 @@ export const messageFields: INodeProperties[] = [
 		description: 'Recipient phone number (with country code, no + or spaces)',
 	},
 	{
-		displayName: 'Instance ID',
+		displayName: 'WhatsApp Instance',
 		name: 'instanceId',
-		type: 'string',
+		type: 'options',
 		required: true,
+		typeOptions: {
+			loadOptionsMethod: 'getInstances',
+		},
 		displayOptions: {
 			show: {
 				resource: ['message'],
@@ -142,7 +148,7 @@ export const messageFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'WhatsApp instance ID',
+		description: 'WhatsApp instance to send from. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 	},
 	{
 		displayName: 'Image URL',
@@ -190,10 +196,13 @@ export const messageFields: INodeProperties[] = [
 		description: 'Recipient phone number (with country code, no + or spaces)',
 	},
 	{
-		displayName: 'Instance ID',
+		displayName: 'WhatsApp Instance',
 		name: 'instanceId',
-		type: 'string',
+		type: 'options',
 		required: true,
+		typeOptions: {
+			loadOptionsMethod: 'getInstances',
+		},
 		displayOptions: {
 			show: {
 				resource: ['message'],
@@ -201,7 +210,7 @@ export const messageFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'WhatsApp instance ID',
+		description: 'WhatsApp instance to send from. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 	},
 	{
 		displayName: 'Audio URL',
@@ -236,10 +245,13 @@ export const messageFields: INodeProperties[] = [
 		description: 'Recipient phone number (with country code, no + or spaces)',
 	},
 	{
-		displayName: 'Instance ID',
+		displayName: 'WhatsApp Instance',
 		name: 'instanceId',
-		type: 'string',
+		type: 'options',
 		required: true,
+		typeOptions: {
+			loadOptionsMethod: 'getInstances',
+		},
 		displayOptions: {
 			show: {
 				resource: ['message'],
@@ -247,7 +259,7 @@ export const messageFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'WhatsApp instance ID',
+		description: 'WhatsApp instance to send from. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 	},
 	{
 		displayName: 'Document URL',

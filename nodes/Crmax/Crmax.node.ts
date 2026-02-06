@@ -1,6 +1,8 @@
 import type {
 	IExecuteFunctions,
+	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	IHttpRequestMethods,
@@ -93,6 +95,200 @@ export class Crmax implements INodeType {
 			...webhookOperations,
 			...webhookFields,
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			// Carregar pipelines
+			async getPipelines(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const credentials = await this.getCredentials('crmaxApi');
+				const baseUrl = credentials.baseUrl as string;
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const response = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `${baseUrl}/api/pipelines`,
+						headers: {
+							Authorization: `Bearer ${credentials.apiToken}`,
+						},
+						json: true,
+					});
+
+					for (const pipeline of response) {
+						returnData.push({
+							name: pipeline.name,
+							value: pipeline.id,
+							description: `${pipeline.stages?.length || 0} etapas`,
+						});
+					}
+				} catch (error) {
+					// Retorna lista vazia se der erro
+				}
+
+				return returnData;
+			},
+
+			// Carregar etapas de um pipeline
+			async getStages(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const credentials = await this.getCredentials('crmaxApi');
+				const baseUrl = credentials.baseUrl as string;
+				const returnData: INodePropertyOptions[] = [];
+
+				// Tenta pegar o pipelineId do contexto
+				const pipelineId = this.getCurrentNodeParameter('pipelineId') as string;
+				if (!pipelineId) {
+					return [{ name: 'Selecione um pipeline primeiro', value: '' }];
+				}
+
+				try {
+					const response = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `${baseUrl}/api/pipelines/${pipelineId}`,
+						headers: {
+							Authorization: `Bearer ${credentials.apiToken}`,
+						},
+						json: true,
+					});
+
+					if (response.stages) {
+						for (const stage of response.stages) {
+							returnData.push({
+								name: stage.name,
+								value: stage.id,
+							});
+						}
+					}
+				} catch (error) {
+					// Retorna lista vazia se der erro
+				}
+
+				return returnData;
+			},
+
+			// Carregar usuários da organização
+			async getUsers(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const credentials = await this.getCredentials('crmaxApi');
+				const baseUrl = credentials.baseUrl as string;
+				const organizationId = credentials.organizationId as string;
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const response = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `${baseUrl}/api/organizations/${organizationId}/users`,
+						headers: {
+							Authorization: `Bearer ${credentials.apiToken}`,
+						},
+						json: true,
+					});
+
+					for (const user of response) {
+						returnData.push({
+							name: user.name || user.email,
+							value: user.id,
+							description: user.email,
+						});
+					}
+				} catch (error) {
+					// Retorna lista vazia se der erro
+				}
+
+				return returnData;
+			},
+
+			// Carregar instâncias WhatsApp
+			async getInstances(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const credentials = await this.getCredentials('crmaxApi');
+				const baseUrl = credentials.baseUrl as string;
+				const organizationId = credentials.organizationId as string;
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const response = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `${baseUrl}/api/organizations/${organizationId}/whatsapp-instances`,
+						headers: {
+							Authorization: `Bearer ${credentials.apiToken}`,
+						},
+						json: true,
+					});
+
+					for (const instance of response) {
+						returnData.push({
+							name: instance.name || instance.instance_name,
+							value: instance.id,
+							description: instance.phone || 'Sem número',
+						});
+					}
+				} catch (error) {
+					// Retorna lista vazia se der erro
+				}
+
+				return returnData;
+			},
+
+			// Carregar labels/etiquetas
+			async getLabels(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const credentials = await this.getCredentials('crmaxApi');
+				const baseUrl = credentials.baseUrl as string;
+				const organizationId = credentials.organizationId as string;
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const response = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `${baseUrl}/api/organizations/${organizationId}/labels`,
+						headers: {
+							Authorization: `Bearer ${credentials.apiToken}`,
+						},
+						json: true,
+					});
+
+					for (const label of response) {
+						returnData.push({
+							name: label.name,
+							value: label.id,
+							description: label.color || '',
+						});
+					}
+				} catch (error) {
+					// Retorna lista vazia se der erro
+				}
+
+				return returnData;
+			},
+
+			// Carregar equipes
+			async getTeams(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const credentials = await this.getCredentials('crmaxApi');
+				const baseUrl = credentials.baseUrl as string;
+				const organizationId = credentials.organizationId as string;
+				const returnData: INodePropertyOptions[] = [];
+
+				try {
+					const response = await this.helpers.httpRequest({
+						method: 'GET',
+						url: `${baseUrl}/api/organizations/${organizationId}/teams`,
+						headers: {
+							Authorization: `Bearer ${credentials.apiToken}`,
+						},
+						json: true,
+					});
+
+					for (const team of response) {
+						returnData.push({
+							name: team.name,
+							value: team.id,
+						});
+					}
+				} catch (error) {
+					// Retorna lista vazia se der erro
+				}
+
+				return returnData;
+			},
+		},
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
