@@ -31,6 +31,12 @@ export const cardOperations: INodeProperties[] = [
 				action: 'Get many cards',
 			},
 			{
+				name: 'Get by Contact',
+				value: 'getByContact',
+				description: 'Get all cards for a specific contact',
+				action: 'Get cards by contact',
+			},
+			{
 				name: 'Update',
 				value: 'update',
 				description: 'Update a card',
@@ -276,6 +282,13 @@ export const cardFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Contact ID',
+				name: 'contactId',
+				type: 'string',
+				default: '',
+				description: 'Filter cards by contact ID',
+			},
+			{
 				displayName: 'Stage ID',
 				name: 'stageId',
 				type: 'string',
@@ -307,12 +320,19 @@ export const cardFields: INodeProperties[] = [
 						value: 'won',
 					},
 					{
-						name: 'Scheduled',
-						value: 'scheduled',
+						name: 'Lost',
+						value: 'lost',
 					},
 				],
 				default: 'active',
 				description: 'Filter by card status',
+			},
+			{
+				displayName: 'Include Archived',
+				name: 'includeArchived',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to include archived cards in results',
 			},
 			{
 				displayName: 'Text Filter',
@@ -320,6 +340,155 @@ export const cardFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Search in title, contact name, phone, email, or notes',
+			},
+			{
+				displayName: 'Origin',
+				name: 'origin',
+				type: 'string',
+				default: '',
+				description: 'Filter by lead origin (e.g., Meta Ads, Google Ads, Website)',
+			},
+			{
+				displayName: 'Label ID',
+				name: 'labelId',
+				type: 'string',
+				default: '',
+				description: 'Filter by label/tag ID',
+			},
+			{
+				displayName: 'Created After',
+				name: 'createdAtAfter',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter cards created after this date',
+			},
+			{
+				displayName: 'Created Before',
+				name: 'createdAtBefore',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter cards created before this date',
+			},
+			{
+				displayName: 'Updated After',
+				name: 'updatedAtAfter',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter cards updated after this date',
+			},
+			{
+				displayName: 'Updated Before',
+				name: 'updatedAtBefore',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter cards updated before this date',
+			},
+			{
+				displayName: 'Scheduled After',
+				name: 'scheduledDateAfter',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter cards scheduled after this date',
+			},
+			{
+				displayName: 'Scheduled Before',
+				name: 'scheduledDateBefore',
+				type: 'dateTime',
+				default: '',
+				description: 'Filter cards scheduled before this date',
+			},
+			{
+				displayName: 'Value Min',
+				name: 'valueMin',
+				type: 'number',
+				default: 0,
+				description: 'Minimum opportunity value',
+			},
+			{
+				displayName: 'Value Max',
+				name: 'valueMax',
+				type: 'number',
+				default: 0,
+				description: 'Maximum opportunity value',
+			},
+			{
+				displayName: 'Include Details',
+				name: 'includeDetails',
+				type: 'multiOptions',
+				options: [
+					{
+						name: 'Contact',
+						value: 'contact',
+					},
+					{
+						name: 'Labels',
+						value: 'labels',
+					},
+					{
+						name: 'Checklist',
+						value: 'checklist',
+					},
+					{
+						name: 'Notes',
+						value: 'notes',
+					},
+					{
+						name: 'History',
+						value: 'history',
+					},
+				],
+				default: ['contact'],
+				description: 'Which details to include in the response',
+			},
+			{
+				displayName: 'Order By',
+				name: 'orderBy',
+				type: 'options',
+				options: [
+					{
+						name: 'Created At',
+						value: 'created_at',
+					},
+					{
+						name: 'Updated At',
+						value: 'updated_at',
+					},
+					{
+						name: 'Title',
+						value: 'title',
+					},
+					{
+						name: 'Value',
+						value: 'value',
+					},
+					{
+						name: 'Scheduled Date',
+						value: 'due_date',
+					},
+					{
+						name: 'Position',
+						value: 'position',
+					},
+				],
+				default: 'created_at',
+				description: 'Field to order results by',
+			},
+			{
+				displayName: 'Order Direction',
+				name: 'orderDirection',
+				type: 'options',
+				options: [
+					{
+						name: 'Descending',
+						value: 'DESC',
+					},
+					{
+						name: 'Ascending',
+						value: 'ASC',
+					},
+				],
+				default: 'DESC',
+				description: 'Direction of ordering',
 			},
 			{
 				displayName: 'Page Number',
@@ -333,9 +502,54 @@ export const cardFields: INodeProperties[] = [
 				name: 'pageSize',
 				type: 'number',
 				default: 50,
-				description: 'Number of results per page',
+				description: 'Number of results per page (max 100)',
 			},
 		],
+	},
+
+	// ----------------------------------
+	//         getByContact
+	// ----------------------------------
+	{
+		displayName: 'Contact ID',
+		name: 'contactId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['card'],
+				operation: ['getByContact'],
+			},
+		},
+		default: '',
+		description: 'ID of the contact to get cards for',
+	},
+	{
+		displayName: 'Pipeline ID',
+		name: 'pipelineId',
+		type: 'string',
+		required: false,
+		displayOptions: {
+			show: {
+				resource: ['card'],
+				operation: ['getByContact'],
+			},
+		},
+		default: '',
+		description: 'Optional: Filter by specific pipeline',
+	},
+	{
+		displayName: 'Include Archived',
+		name: 'includeArchived',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['card'],
+				operation: ['getByContact'],
+			},
+		},
+		default: false,
+		description: 'Whether to include archived cards',
 	},
 
 	// ----------------------------------

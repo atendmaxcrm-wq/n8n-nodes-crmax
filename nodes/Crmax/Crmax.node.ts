@@ -148,17 +148,49 @@ export class Crmax implements INodeType {
 						endpoint = '/api/cards';
 						qs.pipelineId = this.getNodeParameter('pipelineId', i) as string;
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						// Filtros básicos
+						if (filters.contactId) qs.contactId = filters.contactId;
 						if (filters.stageId) qs.stageId = filters.stageId;
 						if (filters.assignedTo) qs.assignedTo = filters.assignedTo;
 						if (filters.status) qs.status = filters.status;
+						if (filters.includeArchived) qs.includeArchived = 'true';
 						if (filters.textFilter) qs.textFilter = filters.textFilter;
+						if (filters.origin) qs.origin = filters.origin;
+						if (filters.labelId) qs.labelId = filters.labelId;
+						// Filtros de data
+						if (filters.createdAtAfter) qs.createdAtAfter = filters.createdAtAfter;
+						if (filters.createdAtBefore) qs.createdAtBefore = filters.createdAtBefore;
+						if (filters.updatedAtAfter) qs.updatedAtAfter = filters.updatedAtAfter;
+						if (filters.updatedAtBefore) qs.updatedAtBefore = filters.updatedAtBefore;
+						if (filters.scheduledDateAfter) qs.scheduledDateAfter = filters.scheduledDateAfter;
+						if (filters.scheduledDateBefore) qs.scheduledDateBefore = filters.scheduledDateBefore;
+						// Filtros de valor
+						if (filters.valueMin) qs.valueMin = filters.valueMin;
+						if (filters.valueMax) qs.valueMax = filters.valueMax;
+						// Incluir detalhes
+						if (filters.includeDetails && Array.isArray(filters.includeDetails)) {
+							qs.includeDetails = (filters.includeDetails as string[]).join(',');
+						}
+						// Ordenação
+						if (filters.orderBy) qs.orderBy = filters.orderBy;
+						if (filters.orderDirection) qs.orderDirection = filters.orderDirection;
+						// Paginação
 						const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
 						if (!returnAll) {
 							qs.pageSize = this.getNodeParameter('limit', i, 50) as number;
-							qs.pageNumber = 1;
+							qs.pageNumber = filters.pageNumber || 1;
 						} else {
-							qs.pageSize = 1000;
+							qs.pageSize = 100;
 						}
+					} else if (operation === 'getByContact') {
+						method = 'GET';
+						endpoint = '/api/cards';
+						qs.contactId = this.getNodeParameter('contactId', i) as string;
+						const pipelineId = this.getNodeParameter('pipelineId', i, '') as string;
+						if (pipelineId) qs.pipelineId = pipelineId;
+						const includeArchived = this.getNodeParameter('includeArchived', i, false) as boolean;
+						if (includeArchived) qs.includeArchived = 'true';
+						qs.pageSize = 100;
 					} else if (operation === 'update') {
 						method = 'PATCH';
 						const cardId = this.getNodeParameter('cardId', i) as string;
