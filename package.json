@@ -1,19 +1,26 @@
 {
-	"name": "n8n-nodes-<...>",
-	"version": "0.1.0",
-	"description": "",
+	"name": "n8n-nodes-crmax",
+	"version": "1.0.0",
+	"description": "CRMax CRM - Integração completa com gestão de leads via WhatsApp",
 	"license": "MIT",
-	"homepage": "",
+	"homepage": "https://painel.crmax.com.br",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"n8n",
+		"crmax",
+		"crm",
+		"whatsapp",
+		"leads",
+		"pipeline",
+		"automation"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "CRMax",
+		"email": "contato@crmax.com.br"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://github.com/crmax/n8n-nodes-crmax.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -31,12 +38,10 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/GithubIssuesApi.credentials.js",
-			"dist/credentials/GithubIssuesOAuth2Api.credentials.js"
+			"dist/credentials/CrmaxApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/GithubIssues/GithubIssues.node.js",
-			"dist/nodes/Example/Example.node.js"
+			"dist/nodes/Crmax/Crmax.node.js"
 		]
 	},
 	"devDependencies": {
