@@ -295,7 +295,7 @@ export class Crmax implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 		const credentials = await this.getCredentials('crmaxApi');
-		const baseUrl = credentials.baseUrl as string;
+		const baseUrl = (credentials.baseUrl as string).replace(/\/+$/, '');
 		const organizationId = credentials.organizationId as string;
 
 		const resource = this.getNodeParameter('resource', 0) as string;
@@ -537,10 +537,12 @@ export class Crmax implements INodeType {
 						method = 'POST';
 						const options = this.getNodeParameter('options', i, {}) as IDataObject;
 						endpoint = options.sync ? '/api/messages/send-sync' : '/api/messages/send';
+						// Contrato canônico da API CRMax: number/instanceName/text.
+						// instanceId é o UUID do dropdown — a rota resolve UUID -> instance_name.
 						body = {
-							phone: this.getNodeParameter('phone', i) as string,
+							number: this.getNodeParameter('phone', i) as string,
 							instanceId: this.getNodeParameter('instanceId', i) as string,
-							message: this.getNodeParameter('message', i) as string,
+							text: this.getNodeParameter('message', i) as string,
 						};
 					} else if (operation === 'sendFileBySession') {
 						// Enviar arquivo por Session ID
@@ -558,11 +560,13 @@ export class Crmax implements INodeType {
 						method = 'POST';
 						endpoint = '/api/messages/send';
 						const fileType = this.getNodeParameter('fileType', i) as string;
+						// Contrato canônico da API CRMax: number/instanceName/mediaType/media.
+						// instanceId é o UUID do dropdown — a rota resolve UUID -> instance_name.
 						body = {
-							phone: this.getNodeParameter('phone', i) as string,
+							number: this.getNodeParameter('phone', i) as string,
 							instanceId: this.getNodeParameter('instanceId', i) as string,
 							mediaType: fileType,
-							mediaUrl: this.getNodeParameter('mediaUrl', i) as string,
+							media: this.getNodeParameter('mediaUrl', i) as string,
 						};
 						const caption = this.getNodeParameter('caption', i, '') as string;
 						if (caption) body.caption = caption;
@@ -645,6 +649,11 @@ export class Crmax implements INodeType {
 						const deliveryId = this.getNodeParameter('deliveryId', i) as string;
 						endpoint = `/api/webhook-deliveries/${deliveryId}/retry`;
 					}
+				}
+
+				// Validate endpoint was set
+				if (!endpoint) {
+					throw new Error(`No endpoint resolved for resource=${resource}, operation=${operation}. Please check your node configuration.`);
 				}
 
 				// Make API request
