@@ -82,7 +82,7 @@ export const cardFields: INodeProperties[] = [
 	//         create
 	// ----------------------------------
 	{
-		displayName: 'Pipeline',
+		displayName: 'Pipeline Name or ID',
 		name: 'pipelineId',
 		type: 'options',
 		required: true,
@@ -99,7 +99,7 @@ export const cardFields: INodeProperties[] = [
 		description: 'Pipeline where the card will be created. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 	},
 	{
-		displayName: 'Stage',
+		displayName: 'Stage Name or ID',
 		name: 'stageId',
 		type: 'options',
 		required: true,
@@ -154,6 +154,7 @@ export const cardFields: INodeProperties[] = [
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
+				placeholder: 'name@email.com',
 				default: '',
 				description: 'Email address of the lead',
 			},
@@ -179,11 +180,14 @@ export const cardFields: INodeProperties[] = [
 				description: 'Scheduled date for the lead (format: YYYY-MM-DD)',
 			},
 			{
-				displayName: 'Assigned To',
+				displayName: 'Assigned To Name or ID',
 				name: 'assignedTo',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getUsers',
+				},
 				default: '',
-				description: 'User ID or name of the person responsible for this card',
+				description: 'Attendant responsible for this card. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'Notes',
@@ -231,7 +235,7 @@ export const cardFields: INodeProperties[] = [
 	//         getMany
 	// ----------------------------------
 	{
-		displayName: 'Pipeline',
+		displayName: 'Pipeline Name or ID',
 		name: 'pipelineId',
 		type: 'options',
 		required: true,
@@ -299,7 +303,7 @@ export const cardFields: INodeProperties[] = [
 				description: 'Filter cards by contact ID',
 			},
 			{
-				displayName: 'Stage',
+				displayName: 'Stage Name or ID',
 				name: 'stageId',
 				type: 'options',
 				typeOptions: {
@@ -310,7 +314,7 @@ export const cardFields: INodeProperties[] = [
 				description: 'Filter by stage. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
-				displayName: 'Assigned To',
+				displayName: 'Assigned To Name or ID',
 				name: 'assignedTo',
 				type: 'options',
 				typeOptions: {
@@ -366,7 +370,7 @@ export const cardFields: INodeProperties[] = [
 				description: 'Filter by lead origin (e.g., Meta Ads, Google Ads, Website)',
 			},
 			{
-				displayName: 'Label',
+				displayName: 'Label Name or ID',
 				name: 'labelId',
 				type: 'options',
 				typeOptions: {
@@ -545,10 +549,9 @@ export const cardFields: INodeProperties[] = [
 		description: 'ID of the contact to get cards for',
 	},
 	{
-		displayName: 'Pipeline',
+		displayName: 'Pipeline Name or ID',
 		name: 'pipelineId',
 		type: 'options',
-		required: false,
 		typeOptions: {
 			loadOptionsMethod: 'getPipelines',
 		},
@@ -634,16 +637,20 @@ export const cardFields: INodeProperties[] = [
 				description: 'Updated notes or observations',
 			},
 			{
-				displayName: 'Assigned To',
+				displayName: 'Assigned To Name or ID',
 				name: 'assignedTo',
-				type: 'string',
+				type: 'options',
+				typeOptions: {
+					loadOptionsMethod: 'getUsers',
+				},
 				default: '',
-				description: 'New responsible user ID',
+				description: 'New attendant responsible for this card. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 			},
 			{
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
+				placeholder: 'name@email.com',
 				default: '',
 				description: 'Email address (also updates contact)',
 			},
@@ -721,7 +728,7 @@ export const cardFields: INodeProperties[] = [
 		description: 'ID of the card to move',
 	},
 	{
-		displayName: 'Pipeline',
+		displayName: 'Pipeline Name or ID',
 		name: 'pipelineId',
 		type: 'options',
 		required: true,
@@ -738,7 +745,7 @@ export const cardFields: INodeProperties[] = [
 		description: 'Pipeline containing the destination stage. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 	},
 	{
-		displayName: 'Stage',
+		displayName: 'Stage Name or ID',
 		name: 'stageId',
 		type: 'options',
 		required: true,

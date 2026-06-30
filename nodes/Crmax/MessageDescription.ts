@@ -84,7 +84,7 @@ export const messageFields: INodeProperties[] = [
 
 	// ==================== SEND TEXT BY PHONE ====================
 	{
-		displayName: 'WhatsApp Instance',
+		displayName: 'WhatsApp Instance Name or ID',
 		name: 'instanceId',
 		type: 'options',
 		required: true,
@@ -246,7 +246,7 @@ export const messageFields: INodeProperties[] = [
 
 	// ==================== SEND FILE BY PHONE ====================
 	{
-		displayName: 'WhatsApp Instance',
+		displayName: 'WhatsApp Instance Name or ID',
 		name: 'instanceId',
 		type: 'options',
 		required: true,

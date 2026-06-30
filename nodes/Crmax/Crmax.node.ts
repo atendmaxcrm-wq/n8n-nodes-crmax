@@ -15,6 +15,8 @@ import { sessionOperations, sessionFields } from './SessionDescription';
 import { messageOperations, messageFields } from './MessageDescription';
 import { pipelineOperations, pipelineFields } from './PipelineDescription';
 import { webhookOperations, webhookFields } from './WebhookDescription';
+import { userOperations, userFields } from './UserDescription';
+import { conversationOperations, conversationFields } from './ConversationDescription';
 
 export class Crmax implements INodeType {
 	description: INodeTypeDescription = {
@@ -54,6 +56,16 @@ export class Crmax implements INodeType {
 						description: 'Gerenciar contatos',
 					},
 					{
+						name: 'Conversation',
+						value: 'conversation',
+						description: 'Notas internas de conversas',
+					},
+					{
+						name: 'User',
+						value: 'user',
+						description: 'Listar usuários/atendentes da organização',
+					},
+					{
 						name: 'Message',
 						value: 'message',
 						description: 'Enviar mensagens (texto, imagem, áudio, documento)',
@@ -82,6 +94,12 @@ export class Crmax implements INodeType {
 			// Contact
 			...contactOperations,
 			...contactFields,
+			// Conversation
+			...conversationOperations,
+			...conversationFields,
+			// User
+			...userOperations,
+			...userFields,
 			// Session
 			...sessionOperations,
 			...sessionFields,
@@ -95,6 +113,7 @@ export class Crmax implements INodeType {
 			...webhookOperations,
 			...webhookFields,
 		],
+		usableAsTool: true,
 	};
 
 	methods = {
@@ -138,7 +157,7 @@ export class Crmax implements INodeType {
 				// Tenta pegar o pipelineId do contexto
 				const pipelineId = this.getCurrentNodeParameter('pipelineId') as string;
 				if (!pipelineId) {
-					return [{ name: 'Selecione um pipeline primeiro', value: '' }];
+					return [{ name: 'Selecione Um Pipeline Primeiro', value: '' }];
 				}
 
 				try {
@@ -166,28 +185,30 @@ export class Crmax implements INodeType {
 				return returnData;
 			},
 
-			// Carregar usuários da organização
+			// Carregar usuários/atendentes da organização
 			async getUsers(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const credentials = await this.getCredentials('crmaxApi');
-				const baseUrl = credentials.baseUrl as string;
-				const organizationId = credentials.organizationId as string;
+				const baseUrl = (credentials.baseUrl as string).replace(/\/+$/, '');
 				const returnData: INodePropertyOptions[] = [];
 
 				try {
+					// /api/users é escopado pelo token (não precisa de orgId no path) e
+					// retorna { users: [...] } com as equipes de cada atendente.
 					const response = await this.helpers.httpRequest({
 						method: 'GET',
-						url: `${baseUrl}/api/organizations/${organizationId}/users`,
+						url: `${baseUrl}/api/users`,
 						headers: {
 							Authorization: `Bearer ${credentials.apiToken}`,
 						},
 						json: true,
 					});
 
-					for (const user of response) {
+					const users = Array.isArray(response) ? response : response.users || [];
+					for (const user of users) {
 						returnData.push({
 							name: user.name || user.email,
 							value: user.id,
-							description: user.email,
+							description: user.role ? `${user.email} · ${user.role}` : user.email,
 						});
 					}
 				} catch (error) {
@@ -197,28 +218,30 @@ export class Crmax implements INodeType {
 				return returnData;
 			},
 
-			// Carregar instâncias WhatsApp
+			// Carregar instâncias/canais WhatsApp
 			async getInstances(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const credentials = await this.getCredentials('crmaxApi');
-				const baseUrl = credentials.baseUrl as string;
+				const baseUrl = (credentials.baseUrl as string).replace(/\/+$/, '');
 				const organizationId = credentials.organizationId as string;
 				const returnData: INodePropertyOptions[] = [];
 
 				try {
+					// Rota correta é /instances (não /whatsapp-instances, que não existe na API).
 					const response = await this.helpers.httpRequest({
 						method: 'GET',
-						url: `${baseUrl}/api/organizations/${organizationId}/whatsapp-instances`,
+						url: `${baseUrl}/api/organizations/${organizationId}/instances`,
 						headers: {
 							Authorization: `Bearer ${credentials.apiToken}`,
 						},
 						json: true,
 					});
 
-					for (const instance of response) {
+					const instances = Array.isArray(response) ? response : response.instances || [];
+					for (const instance of instances) {
 						returnData.push({
 							name: instance.name || instance.instance_name,
 							value: instance.id,
-							description: instance.phone || 'Sem número',
+							description: instance.phone_number || instance.phone || 'Sem número',
 						});
 					}
 				} catch (error) {
@@ -231,21 +254,22 @@ export class Crmax implements INodeType {
 			// Carregar labels/etiquetas
 			async getLabels(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
 				const credentials = await this.getCredentials('crmaxApi');
-				const baseUrl = credentials.baseUrl as string;
-				const organizationId = credentials.organizationId as string;
+				const baseUrl = (credentials.baseUrl as string).replace(/\/+$/, '');
 				const returnData: INodePropertyOptions[] = [];
 
 				try {
+					// /api/labels é escopado pelo token (sem orgId no path).
 					const response = await this.helpers.httpRequest({
 						method: 'GET',
-						url: `${baseUrl}/api/organizations/${organizationId}/labels`,
+						url: `${baseUrl}/api/labels`,
 						headers: {
 							Authorization: `Bearer ${credentials.apiToken}`,
 						},
 						json: true,
 					});
 
-					for (const label of response) {
+					const labels = Array.isArray(response) ? response : response.labels || [];
+					for (const label of labels) {
 						returnData.push({
 							name: label.name,
 							value: label.id,
@@ -307,7 +331,7 @@ export class Crmax implements INodeType {
 				let endpoint = '';
 				let method: IHttpRequestMethods = 'GET';
 				let body: IDataObject = {};
-				let qs: IDataObject = {};
+				const qs: IDataObject = {};
 
 				// ==================== CARD ====================
 				if (resource === 'card') {
@@ -440,11 +464,15 @@ export class Crmax implements INodeType {
 					} else if (operation === 'getMany') {
 						method = 'GET';
 						endpoint = '/api/contacts';
-						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						// A collection no description chama-se 'additionalFields'.
+						const filters = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
 						if (filters.search) qs.search = filters.search;
+						if (filters.pageNumber) qs.pageNumber = filters.pageNumber;
 						const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
 						if (!returnAll) {
 							qs.pageSize = this.getNodeParameter('limit', i, 50) as number;
+						} else if (filters.pageSize) {
+							qs.pageSize = filters.pageSize;
 						}
 					} else if (operation === 'update') {
 						method = 'PUT';
@@ -475,12 +503,77 @@ export class Crmax implements INodeType {
 						endpoint = `/api/contacts/${contactId}/custom-fields`;
 						const customFieldsJson = this.getNodeParameter('customFields', i) as string;
 						body.customFields = JSON.parse(customFieldsJson);
+					} else if (operation === 'addNote') {
+						method = 'POST';
+						const contactId = this.getNodeParameter('contactId', i) as string;
+						endpoint = `/api/contacts/${contactId}/notes`;
+						body.content = this.getNodeParameter('content', i) as string;
+						const userId = this.getNodeParameter('userId', i, '') as string;
+						if (userId) body.userId = userId;
+					} else if (operation === 'getNotes') {
+						method = 'GET';
+						const contactId = this.getNodeParameter('contactId', i) as string;
+						endpoint = `/api/contacts/${contactId}/notes`;
+					} else if (operation === 'updateNote') {
+						method = 'PUT';
+						const contactId = this.getNodeParameter('contactId', i) as string;
+						const noteId = this.getNodeParameter('noteId', i) as string;
+						endpoint = `/api/contacts/${contactId}/notes/${noteId}`;
+						body.content = this.getNodeParameter('content', i) as string;
+					} else if (operation === 'deleteNote') {
+						method = 'DELETE';
+						const contactId = this.getNodeParameter('contactId', i) as string;
+						const noteId = this.getNodeParameter('noteId', i) as string;
+						endpoint = `/api/contacts/${contactId}/notes/${noteId}`;
+					}
+				}
+
+				// ==================== CONVERSATION ====================
+				else if (resource === 'conversation') {
+					if (operation === 'addNote') {
+						method = 'POST';
+						const conversationId = this.getNodeParameter('conversationId', i) as string;
+						endpoint = `/api/conversations/${conversationId}/notes`;
+						body.content = this.getNodeParameter('content', i) as string;
+						const userId = this.getNodeParameter('userId', i, '') as string;
+						if (userId) body.userId = userId;
+					} else if (operation === 'getNotes') {
+						method = 'GET';
+						const conversationId = this.getNodeParameter('conversationId', i) as string;
+						endpoint = `/api/conversations/${conversationId}/notes`;
+					} else if (operation === 'updateNote') {
+						method = 'PUT';
+						const noteId = this.getNodeParameter('noteId', i) as string;
+						endpoint = `/api/notes/${noteId}`;
+						body.content = this.getNodeParameter('content', i) as string;
+					} else if (operation === 'deleteNote') {
+						method = 'DELETE';
+						const conversationId = this.getNodeParameter('conversationId', i) as string;
+						const noteId = this.getNodeParameter('noteId', i) as string;
+						endpoint = `/api/conversations/${conversationId}/notes/${noteId}`;
+					}
+				}
+
+				// ==================== USER ====================
+				else if (resource === 'user') {
+					if (operation === 'list') {
+						method = 'GET';
+						endpoint = '/api/users';
+						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
+						if (filters.role) qs.role = filters.role;
+						if (filters.status) qs.status = filters.status;
+						if (filters.search) qs.search = filters.search;
+					} else if (operation === 'get') {
+						method = 'GET';
+						const userId = this.getNodeParameter('userId', i) as string;
+						endpoint = `/api/users/${userId}`;
 					}
 				}
 
 				// ==================== SESSION ====================
 				else if (resource === 'session') {
-					if (operation === 'getMany') {
+					// O description usa value 'getAll'; aceitamos ambos por compatibilidade.
+					if (operation === 'getAll' || operation === 'getMany') {
 						method = 'GET';
 						endpoint = '/api/sessions';
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
@@ -602,7 +695,7 @@ export class Crmax implements INodeType {
 						};
 						const options = this.getNodeParameter('options', i, []) as string[];
 						if (options.length > 0) body.options = options;
-						const isRequired = this.getNodeParameter('isRequired', i, false) as boolean;
+						const isRequired = this.getNodeParameter('required', i, false) as boolean;
 						if (isRequired) body.isRequired = isRequired;
 					}
 				}
@@ -617,8 +710,9 @@ export class Crmax implements INodeType {
 							url: this.getNodeParameter('url', i) as string,
 							events: this.getNodeParameter('events', i) as string[],
 						};
-						const isActive = this.getNodeParameter('isActive', i, true) as boolean;
-						body.isActive = isActive;
+						// isActive vive dentro da collection additionalFields no description.
+						const webhookAdditional = this.getNodeParameter('additionalFields', i, {}) as IDataObject;
+						body.isActive = webhookAdditional.isActive !== undefined ? webhookAdditional.isActive : true;
 					} else if (operation === 'getMany') {
 						method = 'GET';
 						endpoint = '/api/webhooks';
@@ -685,6 +779,9 @@ export class Crmax implements INodeType {
 				} else if (responseData.items && Array.isArray(responseData.items)) {
 					// Paginated response
 					returnData.push(...responseData.items.map((item: unknown) => ({ json: item })));
+				} else if (responseData.users && Array.isArray(responseData.users)) {
+					// Wrapped list (ex.: GET /api/users -> { users: [...] })
+					returnData.push(...responseData.users.map((item: unknown) => ({ json: item })));
 				} else {
 					returnData.push({ json: responseData });
 				}

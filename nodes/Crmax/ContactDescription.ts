@@ -66,6 +66,30 @@ export const contactOperations: INodeProperties[] = [
 				description: 'Update contact custom fields',
 				action: 'Update contact custom fields',
 			},
+			{
+				name: 'Add Note',
+				value: 'addNote',
+				description: 'Add a note to a contact',
+				action: 'Add a note to a contact',
+			},
+			{
+				name: 'Get Notes',
+				value: 'getNotes',
+				description: 'List notes of a contact',
+				action: 'Get contact notes',
+			},
+			{
+				name: 'Update Note',
+				value: 'updateNote',
+				description: 'Update a contact note',
+				action: 'Update a contact note',
+			},
+			{
+				name: 'Delete Note',
+				value: 'deleteNote',
+				description: 'Delete a contact note',
+				action: 'Delete a contact note',
+			},
 		],
 		default: 'create',
 	},
@@ -113,6 +137,7 @@ export const contactFields: INodeProperties[] = [
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
+				placeholder: 'name@email.com',
 				default: '',
 				description: 'Email address of the contact',
 			},
@@ -274,6 +299,7 @@ export const contactFields: INodeProperties[] = [
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
+				placeholder: 'name@email.com',
 				default: '',
 				description: 'Email address of the contact',
 			},
@@ -321,6 +347,7 @@ export const contactFields: INodeProperties[] = [
 				displayName: 'Email',
 				name: 'email',
 				type: 'string',
+				placeholder: 'name@email.com',
 				default: '',
 				description: 'Email address of the contact',
 			},
@@ -407,5 +434,95 @@ export const contactFields: INodeProperties[] = [
 		},
 		default: '{}',
 		description: 'JSON object with custom field key-value pairs',
+	},
+
+	// ----------------------------------
+	//   notes: contactId (addNote/getNotes/updateNote/deleteNote)
+	// ----------------------------------
+	{
+		displayName: 'Contact ID',
+		name: 'contactId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['contact'],
+				operation: ['addNote', 'getNotes', 'updateNote', 'deleteNote'],
+			},
+		},
+		default: '',
+		description: 'ID of the contact',
+	},
+
+	// ----------------------------------
+	//         addNote
+	// ----------------------------------
+	{
+		displayName: 'Content',
+		name: 'content',
+		type: 'string',
+		typeOptions: {
+			rows: 3,
+		},
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['contact'],
+				operation: ['addNote'],
+			},
+		},
+		default: '',
+		description: 'The note content',
+	},
+	{
+		displayName: 'Author (User) Name or ID',
+		name: 'userId',
+		type: 'options',
+		typeOptions: {
+			loadOptionsMethod: 'getUsers',
+		},
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['contact'],
+				operation: ['addNote'],
+			},
+		},
+		description: 'Attendant to record as the author of the note. Recommended when using an API token (the token has no user of its own); if left empty, the first org admin is used as the author. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+	},
+
+	// ----------------------------------
+	//         updateNote / deleteNote
+	// ----------------------------------
+	{
+		displayName: 'Note ID',
+		name: 'noteId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['contact'],
+				operation: ['updateNote', 'deleteNote'],
+			},
+		},
+		default: '',
+		description: 'ID of the note',
+	},
+	{
+		displayName: 'Content',
+		name: 'content',
+		type: 'string',
+		typeOptions: {
+			rows: 3,
+		},
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['contact'],
+				operation: ['updateNote'],
+			},
+		},
+		default: '',
+		description: 'The new note content',
 	},
 ];

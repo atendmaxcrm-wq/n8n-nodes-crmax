@@ -121,7 +121,7 @@ export const sessionFields: INodeProperties[] = [
 						value: 'closed',
 					},
 				],
-				default: '',
+				default: 'open',
 				description: 'Filter sessions by status',
 			},
 			{
