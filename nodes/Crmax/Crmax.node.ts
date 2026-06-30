@@ -551,6 +551,28 @@ export class Crmax implements INodeType {
 						const conversationId = this.getNodeParameter('conversationId', i) as string;
 						const noteId = this.getNodeParameter('noteId', i) as string;
 						endpoint = `/api/conversations/${conversationId}/notes/${noteId}`;
+					} else if (operation === 'assign') {
+						method = 'POST';
+						const conversationId = this.getNodeParameter('conversationId', i) as string;
+						endpoint = `/api/conversations/${conversationId}/assign`;
+						body.userId = this.getNodeParameter('userId', i) as string;
+						const teamId = this.getNodeParameter('teamId', i, '') as string;
+						if (teamId) body.teamId = teamId;
+					} else if (operation === 'transfer') {
+						method = 'POST';
+						const conversationId = this.getNodeParameter('conversationId', i) as string;
+						endpoint = `/api/conversations/${conversationId}/transfer`;
+						const toUserId = this.getNodeParameter('toUserId', i, '') as string;
+						const toTeamId = this.getNodeParameter('toTeamId', i, '') as string;
+						const reason = this.getNodeParameter('reason', i, '') as string;
+						if (toUserId) body.toUserId = toUserId;
+						if (toTeamId) body.toTeamId = toTeamId;
+						if (reason) body.reason = reason;
+					} else if (operation === 'toggleAi') {
+						method = 'PATCH';
+						const conversationId = this.getNodeParameter('conversationId', i) as string;
+						endpoint = `/api/conversations/${conversationId}/ai`;
+						body.enabled = this.getNodeParameter('aiEnabled', i) as boolean;
 					}
 				}
 

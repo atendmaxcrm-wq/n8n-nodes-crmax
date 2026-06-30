@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.0
+
+### Novos recursos (resource Conversation)
+
+- **Assign** — atribui uma conversa a um atendente (dropdown) e/ou equipe. O atendente é obrigatório (um API token não tem usuário próprio, então o responsável precisa ser explícito).
+- **Transfer** — transfere a conversa para outro atendente e/ou equipe, com motivo opcional.
+- **Toggle AI** — pausa ou reativa o agente de IA daquela conversa (campo `ai_enabled`, mesmo comportamento do botão 🤖/⏸️ do Chat). Útil para o n8n assumir/devolver o atendimento.
+
 ## 1.4.0
 
 ### Novos recursos
